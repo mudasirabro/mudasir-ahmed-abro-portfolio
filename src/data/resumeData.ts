@@ -9,10 +9,13 @@ export const personalDetails = {
   email: 'mudasirahmedabro@gmail.com',
   linkedin: 'https://linkedin.com/in/mudasir-ahmed-abro',
   github: 'https://github.com/mudasirabro',
-  avatarUrl: '/src/assets/images/cyber_dev_avatar_1785065565550.jpg',
-  originalAvatarUrl: '/src/assets/images/myimagepfp.jpeg',
-  hologramAvatarUrl: '/src/assets/images/myimagepfp.jpeg',
-  real2050AvatarUrl: '/src/assets/images/myimagepfp.jpeg',
+  
+  // ✅ FIXED IMAGE PATHS FOR VERCEL (using /images/ instead of /src/assets/images/)
+  avatarUrl: '/images/myimagepfp.jpeg',
+  originalAvatarUrl: '/images/myimagepfp.jpeg',
+  hologramAvatarUrl: '/images/myimagepfp.jpeg',
+  real2050AvatarUrl: '/images/myimagepfp.jpeg',
+  
   summary: `Results-driven Full Stack Developer and Software Engineer with hands-on experience building and deploying production-ready web and mobile applications across e-commerce, AI, and enterprise domains. Proficient in the complete SDLC — from responsive front-end interfaces (React.js) and robust RESTful APIs (Node.js, Express.js) to scalable database architecture (MongoDB, MySQL). Certified by Google in IT Automation with Python, Project Management, and AI. Eager to contribute clean, maintainable code, strong problem-solving skills, and a solid engineering foundation to a forward-thinking software team.`,
   stats: [
     { label: 'Production Apps Delivered', value: '4+', subtext: 'E-commerce, AI & Enterprise' },

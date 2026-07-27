@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@layer utilities {
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(1000%); }
+  }
+  .animate-scanline {
+    animation: scanline 6s linear infinite;
+  }
+
+  @keyframes laser-sweep {
+    0% { top: 0%; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+  .animate-laser-sweep {
+    animation: laser-sweep 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin-slow {
+    animation: spin-slow 20s linear infinite;
+  }
+
+  @keyframes spin-reverse-slow {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  .animate-spin-reverse-slow {
+    animation: spin-reverse-slow 25s linear infinite;
+  }
+
+  @keyframes float-2050 {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(0.5deg); }
+  }
+  .animate-float-2050 {
+    animation: float-2050 5s ease-in-out infinite;
+  }
+
+  @keyframes hologram-glow {
+    0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.6)); }
+    50% { opacity: 1; filter: drop-shadow(0 0 28px rgba(16, 185, 129, 0.8)); }
+  }
+  .animate-hologram-glow {
+    animation: hologram-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes circuit-pulse {
+    0%, 100% { opacity: 0.3; filter: drop-shadow(0 0 5px rgba(6, 182, 212, 0.3)); }
+    50% { opacity: 1; filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.8)); }
+  }
+  .animate-circuit-pulse {
+    animation: circuit-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes shimmer-text {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  .animate-shimmer-text {
+    background: linear-gradient(90deg, #38bdf8 0%, #34d399 25%, #a855f7 50%, #38bdf8 75%, #34d399 100%);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    animation: shimmer-text 4s linear infinite;
+  }
+
+  @keyframes portal-vortex {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.08); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  .animate-portal-vortex {
+    animation: portal-vortex 12s linear infinite;
+  }
+
+  @keyframes wormhole-expand {
+    0% { transform: scale(0.95); opacity: 0.6; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.6; }
+  }
+  .animate-wormhole {
+    animation: wormhole-expand 4s ease-in-out infinite;
+  }
+}
+
+/* Custom Cyber Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #05070c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0e2f44;
+  border-radius: 4px;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
+
+/* 2050 Sci-Fi Perspective Grid Background */
+.bg-cyber-grid {
+  background-image: 
+    linear-gradient(to right, rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Print CSS rules for ATS Resume */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-resume, #printable-resume * {
+    visibility: visible;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  #printable-resume {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+

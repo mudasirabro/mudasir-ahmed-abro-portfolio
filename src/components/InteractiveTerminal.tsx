@@ -81,7 +81,7 @@ export const InteractiveTerminal: React.FC<TerminalProps> = ({ isOpen, onClose }
               <div><span className="text-emerald-400 font-bold">skills</span> - Categorized technical skill matrix</div>
               <div><span className="text-emerald-400 font-bold">projects</span> - Production projects & architecture</div>
               <div><span className="text-emerald-400 font-bold">experience</span> - Work history & impact metrics</div>
-              <div><span className="text-emerald-400 font-bold">certifications</span> - Google certified credentials</div>
+              <div><span className="text-emerald-400 font-bold">certifications</span> - Professional certified credentials (Meta & Google)</div>
               <div><span className="text-emerald-400 font-bold">education</span> - University degree details</div>
               <div><span className="text-emerald-400 font-bold">contact</span> - Phone, Email, LinkedIn, GitHub</div>
               <div><span className="text-emerald-400 font-bold">sudo hire</span> - Initiate recruiter contact protocol</div>
@@ -161,14 +161,25 @@ export const InteractiveTerminal: React.FC<TerminalProps> = ({ isOpen, onClose }
       case 'certifications':
         outputNode = (
           <div className="space-y-2 text-xs sm:text-sm font-mono">
-            <p className="text-cyan-400 font-bold">GOOGLE PROFESSIONAL CERTIFICATIONS (2026):</p>
+            <p className="text-cyan-400 font-bold">PROFESSIONAL CERTIFICATIONS (2026):</p>
             {certificationsData.map((cert, idx) => (
-              <div key={idx} className="p-2 bg-slate-900/60 rounded border border-slate-800 flex items-center justify-between">
+              <div key={idx} className="p-2 bg-slate-900/60 rounded border border-slate-800 flex items-center justify-between gap-2">
                 <div>
                   <p className="text-emerald-300 font-bold">{cert.title}</p>
-                  <p className="text-slate-400 text-xs">Skills: {cert.skills.join(', ')}</p>
+                  <p className="text-slate-400 text-xs">{cert.issuer} • Skills: {cert.skills.join(', ')}</p>
                 </div>
-                <span className="text-cyan-400 font-bold text-xs">Verified</span>
+                {cert.verifyUrl ? (
+                  <a
+                    href={cert.verifyUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-cyan-400 hover:text-cyan-300 underline font-bold text-xs shrink-0 flex items-center gap-1"
+                  >
+                    Verify ↗
+                  </a>
+                ) : (
+                  <span className="text-cyan-400 font-bold text-xs shrink-0">Verified</span>
+                )}
               </div>
             ))}
           </div>

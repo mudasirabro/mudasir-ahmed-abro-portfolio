@@ -16,12 +16,12 @@ export const personalDetails = {
   hologramAvatarUrl: '/images/myimagepfp.jpeg',
   real2050AvatarUrl: '/images/myimagepfp.jpeg',
   
-  summary: `Results-driven Full Stack Developer and Software Engineer with hands-on experience building and deploying production-ready web and mobile applications across e-commerce, AI, and enterprise domains. Proficient in the complete SDLC — from responsive front-end interfaces (React.js) and robust RESTful APIs (Node.js, Express.js) to scalable database architecture (MongoDB, MySQL). Certified by Google in IT Automation with Python, Project Management, and AI. Eager to contribute clean, maintainable code, strong problem-solving skills, and a solid engineering foundation to a forward-thinking software team.`,
+  summary: `Results-driven Full Stack Developer and Software Engineer with hands-on experience building and deploying production-ready web and mobile applications across e-commerce, AI, and enterprise domains. Proficient in the complete SDLC — from responsive front-end interfaces (React.js) and robust RESTful APIs (Node.js, Express.js) to scalable database architecture (MongoDB, MySQL). Certified by Meta and Google in Front-End Development, Python Automation, Advanced Data Analytics, and AI. Eager to contribute clean, maintainable code, strong problem-solving skills, and a solid engineering foundation to a forward-thinking software team.`,
   stats: [
     { label: 'Production Apps Delivered', value: '4+', subtext: 'E-commerce, AI & Enterprise' },
     { label: 'On-Time Delivery Rate', value: '100%', subtext: 'Client Satisfaction Verified' },
     { label: 'Page Load Speed Boost', value: '30%', subtext: 'Frontend & API Optimized' },
-    { label: 'Google Certifications', value: '3x', subtext: 'Python, Project Mgmt & AI' },
+    { label: 'Professional Certifications', value: '4x', subtext: 'Meta & Google Verified' },
   ],
 };
 
@@ -293,27 +293,39 @@ export const experienceData: Experience[] = [
 
 export const certificationsData: Certification[] = [
   {
+    id: 'cert-meta-frontend',
+    title: 'Meta Front-End Developer Professional Certificate',
+    issuer: 'Meta (Coursera)',
+    year: '2026',
+    skills: ['React.js', 'HTML5', 'CSS3', 'JavaScript', 'UI/UX', 'Responsive Design'],
+    verifyUrl: 'https://coursera.org/verify/professional-cert/SWDZZUJZAZ06',
+    badgeType: 'meta',
+  },
+  {
     id: 'cert-python',
     title: 'Google IT Automation with Python Professional Certificate',
-    issuer: 'Google',
+    issuer: 'Google (Coursera)',
     year: '2026',
     skills: ['Python', 'Automation', 'Scripting', 'APIs', 'Git', 'Troubleshooting'],
+    verifyUrl: 'https://coursera.org/verify/professional-cert/5V7PGR43TZGI',
     badgeType: 'python',
   },
   {
-    id: 'cert-pm',
-    title: 'Google Project Management Professional Certificate',
-    issuer: 'Google',
+    id: 'cert-data',
+    title: 'Google Advanced Data Analytics Certificate',
+    issuer: 'Google (Coursera)',
     year: '2026',
-    skills: ['Agile', 'Scrum', 'SDLC', 'Risk Management', 'Project Planning'],
-    badgeType: 'pm',
+    skills: ['Data Analysis', 'Python', 'Statistics', 'Machine Learning', 'Tableau'],
+    verifyUrl: 'https://coursera.org/verify/professional-cert/C6WGLX3FN30J',
+    badgeType: 'data',
   },
   {
     id: 'cert-ai',
     title: 'Google AI Professional Certificate',
-    issuer: 'Google',
+    issuer: 'Google (Coursera)',
     year: '2026',
     skills: ['Generative AI', 'Prompt Engineering', 'AI Applications', 'LLMs'],
+    verifyUrl: 'https://coursera.org/verify/professional-cert/EEMOLF5E7TNV',
     badgeType: 'ai',
   },
 ];

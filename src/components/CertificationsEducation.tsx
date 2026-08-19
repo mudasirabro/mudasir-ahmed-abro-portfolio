@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Award, GraduationCap, ShieldCheck, CheckCircle2, Sparkles, MapPin, Calendar, Terminal } from 'lucide-react';
+import { Award, GraduationCap, CheckCircle2, Sparkles, MapPin, Calendar, ExternalLink } from 'lucide-react';
 import { certificationsData, educationData } from '../data/resumeData';
 
 export const CertificationsEducation: React.FC = () => {
@@ -12,6 +12,7 @@ export const CertificationsEducation: React.FC = () => {
           borderColor: 'border-cyan-500/40',
           bgGlow: 'shadow-[0_0_20px_rgba(6,182,212,0.15)]',
           textColor: 'text-cyan-400',
+          verifyColor: 'bg-cyan-950 border-cyan-500/50 text-cyan-300 hover:bg-cyan-900 hover:border-cyan-400',
         };
       case 'pm':
         return {
@@ -19,6 +20,7 @@ export const CertificationsEducation: React.FC = () => {
           borderColor: 'border-emerald-500/40',
           bgGlow: 'shadow-[0_0_20px_rgba(16,185,129,0.15)]',
           textColor: 'text-emerald-400',
+          verifyColor: 'bg-emerald-950 border-emerald-500/50 text-emerald-300 hover:bg-emerald-900 hover:border-emerald-400',
         };
       case 'ai':
         return {
@@ -26,6 +28,23 @@ export const CertificationsEducation: React.FC = () => {
           borderColor: 'border-purple-500/40',
           bgGlow: 'shadow-[0_0_20px_rgba(168,85,247,0.15)]',
           textColor: 'text-purple-400',
+          verifyColor: 'bg-purple-950 border-purple-500/50 text-purple-300 hover:bg-purple-900 hover:border-purple-400',
+        };
+      case 'meta':
+        return {
+          gradient: 'from-blue-500 to-sky-500',
+          borderColor: 'border-blue-500/40',
+          bgGlow: 'shadow-[0_0_20px_rgba(59,130,246,0.15)]',
+          textColor: 'text-blue-400',
+          verifyColor: 'bg-blue-950 border-blue-500/50 text-blue-300 hover:bg-blue-900 hover:border-blue-400',
+        };
+      case 'data':
+        return {
+          gradient: 'from-orange-500 to-amber-500',
+          borderColor: 'border-orange-500/40',
+          bgGlow: 'shadow-[0_0_20px_rgba(249,115,22,0.15)]',
+          textColor: 'text-orange-400',
+          verifyColor: 'bg-orange-950 border-orange-500/50 text-orange-300 hover:bg-orange-900 hover:border-orange-400',
         };
       default:
         return {
@@ -33,6 +52,7 @@ export const CertificationsEducation: React.FC = () => {
           borderColor: 'border-cyan-500/40',
           bgGlow: 'shadow-[0_0_20px_rgba(6,182,212,0.15)]',
           textColor: 'text-cyan-400',
+          verifyColor: 'bg-cyan-950 border-cyan-500/50 text-cyan-300 hover:bg-cyan-900 hover:border-cyan-400',
         };
     }
   };
@@ -45,18 +65,18 @@ export const CertificationsEducation: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 font-mono text-xs">
             <Award className="w-3.5 h-3.5" />
-            <span>CREDENTIALS // GOOGLE_CERTIFIED</span>
+            <span>CREDENTIALS // VERIFIED_CERTIFIED</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white font-sans">
-            Google Certifications & Education
+            Certifications &amp; Education
           </h2>
           <p className="text-slate-400 text-sm sm:text-base">
-            Verified professional credentials from Google and formal Software Engineering degree from Sukkur IBA.
+            Verified professional credentials from Google &amp; Meta, and formal Software Engineering degree from Sukkur IBA.
           </p>
         </div>
 
-        {/* Certifications 3-Card Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        {/* Certifications 4-Card Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           {certificationsData.map((cert, idx) => {
             const style = getBadgeStyle(cert.badgeType);
             return (
@@ -67,11 +87,11 @@ export const CertificationsEducation: React.FC = () => {
                 whileHover={{ scale: 1.03, rotateY: 5, rotateX: -5 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className={`p-6 rounded-2xl bg-slate-950/90 border ${style.borderColor} ${style.bgGlow} shadow-2xl space-y-4 transition-all group relative overflow-hidden backdrop-blur-md`}
+                className={`p-6 rounded-2xl bg-slate-950/90 border ${style.borderColor} ${style.bgGlow} shadow-2xl space-y-4 transition-all group relative overflow-hidden backdrop-blur-md flex flex-col`}
               >
                 {/* Holographic Verification Stamp Overlay */}
                 <div className="absolute -right-4 -bottom-4 w-28 h-28 border border-emerald-500/20 rounded-full animate-spin-slow pointer-events-none flex items-center justify-center text-[8px] font-mono text-emerald-400/40 uppercase tracking-tighter rotate-12">
-                  <span>★ GOOGLE VERIFIED ★ 2050 CERTIFIED ★</span>
+                  <span>★ COURSERA VERIFIED ★ 2026 CERTIFIED ★</span>
                 </div>
 
                 {/* Badge Header */}
@@ -94,7 +114,7 @@ export const CertificationsEducation: React.FC = () => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-white leading-snug group-hover:text-cyan-300 transition-colors relative z-10">
+                <h3 className="text-base font-bold text-white leading-snug group-hover:text-cyan-300 transition-colors relative z-10 flex-1">
                   {cert.title}
                 </h3>
 
@@ -112,6 +132,21 @@ export const CertificationsEducation: React.FC = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Verify Certificate Button */}
+                {cert.verifyUrl && (
+                  <a
+                    href={cert.verifyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`relative z-10 mt-1 flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl border text-[11px] font-mono font-bold transition-all ${style.verifyColor} shadow-sm`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Verify Certificate</span>
+                    <ExternalLink className="w-3 h-3 opacity-70" />
+                  </a>
+                )}
               </motion.div>
             );
           })}

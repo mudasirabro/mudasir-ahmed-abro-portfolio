@@ -15,7 +15,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenTerminal, onOpenResumeModal })
     '2050 Full Stack Software Architect',
     'Quantum AI & Mobile Systems Engineer',
     'MERN & Distributed REST API Expert',
-    'Google Certified AI & Automation Lead',
+    'Meta & Google Certified AI & Web Engineer',
   ];
   const [titleIndex, setTitleIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);

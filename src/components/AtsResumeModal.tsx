@@ -176,7 +176,19 @@ ${educationData.degree} (${educationData.period})
               <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-wider font-mono border-b border-slate-800 pb-0.5">Certifications</h2>
               {certificationsData.map((c) => (
                 <p key={c.id} className="text-slate-300">
-                  <strong className="text-white">{c.title}</strong> ({c.year}) — Skills: {c.skills.join(', ')}
+                  {c.verifyUrl ? (
+                    <a
+                      href={c.verifyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white font-bold underline hover:text-cyan-400"
+                    >
+                      {c.title}
+                    </a>
+                  ) : (
+                    <strong className="text-white">{c.title}</strong>
+                  )}{' '}
+                  ({c.year}) — {c.issuer} | Skills: {c.skills.join(', ')}
                 </p>
               ))}
             </div>

@@ -39,7 +39,7 @@ export const JarvisBot: React.FC = () => {
     const q = query.toLowerCase();
 
     if (q.includes('who') || q.includes('about') || q.includes('mudasir')) {
-      return `${personalDetails.name} is a Full Stack Developer & Software Engineer based in ${personalDetails.location}. He holds a BS in Software Engineering and is certified 3x by Google in Python IT Automation, Project Management, and AI.`;
+      return `${personalDetails.name} is a Full Stack Developer & Software Engineer based in ${personalDetails.location}. He holds a BS in Software Engineering and is certified 4x by Meta and Google in Front-End Development, Python Automation, Advanced Data Analytics, and AI.`;
     }
     if (q.includes('project') || q.includes('work') || q.includes('app')) {
       const pNames = projectsData.map((p) => p.title).join(', ');
@@ -48,9 +48,9 @@ export const JarvisBot: React.FC = () => {
     if (q.includes('skill') || q.includes('tech') || q.includes('stack')) {
       return `Mudasir's core tech stack includes React.js, Node.js, Express.js, MongoDB, MySQL, Python, TypeScript, Tailwind CSS, REST APIs, and Docker containerization.`;
     }
-    if (q.includes('cert') || q.includes('google')) {
-      const certNames = certificationsData.map((c) => c.title).join(' | ');
-      return `Mudasir holds multiple Google Certifications: ${certNames}.`;
+    if (q.includes('cert') || q.includes('google') || q.includes('meta')) {
+      const certNames = certificationsData.map((c) => `${c.title} (${c.issuer})`).join(' | ');
+      return `Mudasir holds 4 verified professional certifications from Meta & Google: ${certNames}.`;
     }
     if (q.includes('contact') || q.includes('hire') || q.includes('email') || q.includes('phone')) {
       return `You can reach Mudasir directly via Email at ${personalDetails.email} or Phone at ${personalDetails.phone}. He is currently available for full-time software engineer roles & enterprise contract work!`;
@@ -234,7 +234,7 @@ export const JarvisBot: React.FC = () => {
               {[
                 'Tell me about Mudasir',
                 'What are his projects?',
-                'Google Certifications?',
+                'Certifications & Credentials',
                 'How to hire him?',
               ].map((pill, idx) => (
                 <button

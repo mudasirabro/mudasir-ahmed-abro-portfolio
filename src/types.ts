@@ -46,8 +46,9 @@ export interface Certification {
   issuer: string;
   year: string;
   skills: string[];
+  verifyUrl?: string;
   credentialUrl?: string;
-  badgeType: 'python' | 'pm' | 'ai';
+  badgeType: 'python' | 'pm' | 'ai' | 'meta' | 'data';
 }
 
 export interface Education {

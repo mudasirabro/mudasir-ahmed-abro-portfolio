@@ -304,7 +304,7 @@ How can I help you today?`,
             />
 
             {/* Chat Box Window */}
-            <div className="relative z-50 sm:fixed sm:bottom-6 sm:left-6 sm:pointer-events-auto">
+            <div className="relative z-50 sm:fixed sm:bottom-4 sm:left-4 sm:pointer-events-auto">
               <motion.div
                 initial={{ opacity: 0, y: 30, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -313,8 +313,8 @@ How can I help you today?`,
                 onClick={(e) => e.stopPropagation()}
                 className={`w-full max-w-[95vw] bg-[#080d1a]/95 border border-purple-500/50 sm:rounded-2xl shadow-[0_0_60px_rgba(168,85,247,0.35)] backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300 ${
                   isExpanded
-                    ? 'h-[92vh] sm:w-[700px]'
-                    : 'h-[85vh] sm:h-[600px] sm:w-[480px]'
+                    ? 'h-[88vh] sm:w-[700px]'
+                    : 'h-[min(540px,78vh)] sm:h-[min(540px,78vh)] sm:w-[460px]'
                 }`}
               >
                 {/* Header Bar */}
@@ -618,10 +618,19 @@ How can I help you today?`,
                   className="flex-1 bg-slate-900/90 border border-slate-700/80 focus:border-cyan-400 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-400/50 font-sans"
                 />
 
+                {/* Secondary Close Button */}
+                <button
+                  onClick={handleClose}
+                  title="Close JARVIS AI (Esc)"
+                  className="p-2.5 rounded-xl bg-slate-900 border border-slate-700/80 hover:border-red-500/60 text-slate-400 hover:text-red-400 text-xs font-mono transition-all flex items-center justify-center shrink-0 cursor-pointer hover:bg-red-950/30"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={!input.trim() || isThinking}
-                  className="p-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 text-white hover:opacity-90 disabled:opacity-40 transition-all flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                  className="p-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 text-white hover:opacity-90 disabled:opacity-40 transition-all flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.3)] cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                 </button>

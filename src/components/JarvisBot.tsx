@@ -313,8 +313,8 @@ How can I help you today?`,
                 onClick={(e) => e.stopPropagation()}
                 className={`w-full max-w-[95vw] bg-[#080d1a]/95 border border-purple-500/50 sm:rounded-2xl shadow-[0_0_60px_rgba(168,85,247,0.35)] backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300 ${
                   isExpanded
-                    ? 'h-[88vh] sm:w-[700px]'
-                    : 'h-[min(540px,78vh)] sm:h-[min(540px,78vh)] sm:w-[460px]'
+                    ? 'h-[90vh] sm:w-[780px]'
+                    : 'h-[min(600px,82vh)] sm:h-[min(600px,82vh)] sm:w-[560px] md:w-[580px]'
                 }`}
               >
                 {/* Header Bar */}

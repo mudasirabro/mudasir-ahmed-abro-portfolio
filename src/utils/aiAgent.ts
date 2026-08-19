@@ -8,27 +8,40 @@ import {
   educationData,
 } from '../data/resumeData';
 
+export type AgentMode = 'general' | 'recruiter' | 'architect' | 'hire';
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'jarvis';
   text: string;
   timestamp: string;
   action?: string | null;
+  mode?: AgentMode;
 }
 
-// Get API Key securely from Vite or environment (.env.local)
+// Get API Key securely from Vite or environment
 const getApiKey = (): string => {
-  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
-    return import.meta.env.VITE_GEMINI_API_KEY;
-  }
-  if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
-    return process.env.GEMINI_API_KEY;
-  }
+  try {
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
+      return import.meta.env.VITE_GEMINI_API_KEY;
+    }
+    if (typeof import.meta !== 'undefined' && import.meta.env?.GEMINI_API_KEY) {
+      return import.meta.env.GEMINI_API_KEY;
+    }
+  } catch {}
+  try {
+    if (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) {
+      return process.env.VITE_GEMINI_API_KEY;
+    }
+    if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
+      return process.env.GEMINI_API_KEY;
+    }
+  } catch {}
   return '';
 };
 
-// Build comprehensive system prompt with rich context
-const buildSystemInstruction = (): string => {
+// Build comprehensive system prompt with rich context tailored to current Agent Mode
+const buildSystemInstruction = (mode: AgentMode = 'general'): string => {
   const skillsList = skillsData
     .map((cat) => `${cat.category}: ${cat.skills.map((s) => `${s.name} (${s.level}%)`).join(', ')}`)
     .join('\n');
@@ -49,7 +62,10 @@ const buildSystemInstruction = (): string => {
     .join('\n\n');
 
   const certsList = certificationsData
-    .map((c) => `- **${c.title}** (${c.year}) by ${c.issuer} [Skills: ${c.skills.join(', ')}] (Verification: ${c.verifyUrl || 'Verified'})`)
+    .map(
+      (c) =>
+        `- **${c.title}** (${c.year}) by ${c.issuer}\n  * Verified Skills: ${c.skills.join(', ')}\n  * Coursera Verification: ${c.verifyUrl || 'Verified'}`
+    )
     .join('\n');
 
   const expList = experienceData
@@ -61,9 +77,25 @@ const buildSystemInstruction = (): string => {
     )
     .join('\n\n');
 
+  let modeSpecificPrompt = '';
+  switch (mode) {
+    case 'recruiter':
+      modeSpecificPrompt = `\nCURRENT MODE: RECRUITER & TALENT SCREENING MODE\nFocus on evaluating job fit, soft skills, team collaboration, technical competence in React/Node/Python, and highlighting business value, latency improvements (+30%), and 100% on-time delivery.`;
+      break;
+    case 'architect':
+      modeSpecificPrompt = `\nCURRENT MODE: SYSTEM ARCHITECT & TECHNICAL DEEP-DIVE MODE\nFocus on full-stack architecture, API security, JWT authentication with HTTP-Only cookies, database schemas (MongoDB & MySQL), transactional locks, and prompt engineering pipelines. Include code patterns or architectural ASCII diagrams when helpful.`;
+      break;
+    case 'hire':
+      modeSpecificPrompt = `\nCURRENT MODE: HIRE & INTERVIEW SCHEDULING MODE\nFocus on Mudasir's availability (immediate for full-time and high-impact remote contract roles), direct contact channels (email: ${personalDetails.email}, phone: ${personalDetails.phone}), and facilitating interview scheduling.`;
+      break;
+    default:
+      modeSpecificPrompt = `\nCURRENT MODE: GENERAL HIGH-TECH AGENT MODE\nDeliver articulate, tech-savvy, and comprehensive responses across Mudasir's full portfolio, background, credentials, and projects.`;
+      break;
+  }
+
   return `You are JARVIS 2050, the Personal AI Agent and Autonomous Digital Representative of Mudasir Ahmed Abro.
-You live inside Mudasir's high-tech, futuristic 2050 portfolio website.
-Your mission is to represent Mudasir professionally, answer technical & architectural questions, assist recruiters/hiring managers, evaluate job fits, and interactively guide visitors through his portfolio.
+You are embedded inside Mudasir's futuristic 2050 portfolio website.
+Your role is to represent Mudasir as an intelligent, articulate, high-level AI Assistant.
 
 ==================================================
 KNOWLEDGE BASE: MUDASIR AHMED ABRO
@@ -92,37 +124,40 @@ KNOWLEDGE BASE: MUDASIR AHMED ABRO
 - Location: ${educationData.location} (${educationData.period})
 - Core Disciplines: SDLC, OOP, Data Structures & Algorithms, DBMS, Software Architecture, System Design, Software QA & Agile testing.
 
-4. VERIFIED CERTIFICATIONS (2026):
+4. 4x VERIFIED PROFESSIONAL CERTIFICATIONS (2026):
 ${certsList}
 
-5. TECHNICAL SKILLS & STACK:
+5. TECHNICAL SKILLS & PROFICIENCY:
 ${skillsList}
 
-6. PRODUCTION PROJECTS & ARCHITECTURE:
+6. PRODUCTION PROJECTS & ARCHITECTURES:
 ${projectsList}
 
-7. WORK EXPERIENCE:
+7. WORK EXPERIENCE & IMPACT:
 ${expList}
+
+${modeSpecificPrompt}
 
 ==================================================
 INTERACTIVE ACTIONS / TOOLS CAPABILITY:
 ==================================================
-You have the power to control the user's view on this portfolio website by appending special action tags at the very end of your response when appropriate:
-- If the user asks to see/open/download his resume or ATS resume: include "[ACTION:OPEN_RESUME]"
-- If the user wants to see/browse his projects: include "[ACTION:SCROLL_PROJECTS]"
-- If the user asks about his technical skills or stack: include "[ACTION:SCROLL_SKILLS]"
-- If the user asks to see his work experience/history: include "[ACTION:SCROLL_EXPERIENCE]"
-- If the user asks about credentials or certificates: include "[ACTION:SCROLL_CERTS]"
-- If the user wants to contact, hire, or email Mudasir: include "[ACTION:SCROLL_CONTACT]"
+You can trigger website actions ONLY when the visitor explicitly asks to perform an action or navigate:
+- Explicit request to open/view/download ATS resume: include "[ACTION:OPEN_RESUME]"
+- Explicit request to navigate/scroll to projects section: include "[ACTION:SCROLL_PROJECTS]"
+- Explicit request to navigate/scroll to skills section: include "[ACTION:SCROLL_SKILLS]"
+- Explicit request to navigate/scroll to certifications: include "[ACTION:SCROLL_CERTS]"
+- Explicit request to navigate/scroll to contact section: include "[ACTION:SCROLL_CONTACT]"
+
+CRITICAL RULE FOR ACTIONS:
+- If the visitor simply asks a question (e.g. "What certifications do you have?" or "How does the AI Resume builder work?"), DO NOT trigger an action! Instead, answer the question thoroughly, articulately, and directly in the chat!
 
 ==================================================
 BEHAVIORAL GUIDELINES:
 ==================================================
-1. TONE: Sharp, knowledgeable, professional, tech-savvy, articulate, and welcoming (like a sophisticated AI assistant).
-2. ACCURACY: Provide exact, factual information based strictly on Mudasir's verified background. Never invent fake degrees or projects.
-3. RECRUITER ASSISTANCE: If someone asks if Mudasir fits a certain role (e.g. Frontend Engineer, Full Stack Developer, React/Node Developer, AI Engineer), highlight his exact matching skills, production experience, and invite them to hire or schedule a conversation.
-4. FORMATTING: Use clean markdown with bullet points, bold highlights, or short code snippets where appropriate to make responses pleasant and easy to read.
-5. CONCISENESS: Be thorough yet concise. Keep responses between 2-4 focused paragraphs or structured bullet lists.`;
+1. ANSWER DIRECTLY: Always answer the user's specific question first in detail. Never dump generic boilerplate or recite raw resumes.
+2. TONE: Eloquent, tech-forward, professional, and confident (like an advanced AI assistant).
+3. TRUTHFULNESS: Base all factual answers strictly on Mudasir's verified information.
+4. FORMATTING: Use clean markdown with headings, bullet points, and code snippets where appropriate.`;
 };
 
 // Parse any embedded action token from AI response
@@ -181,92 +216,128 @@ export const executeUiAction = (
   }
 };
 
-// Offline intelligent fallback in case of no internet
-const generateSmartOfflineReply = (query: string): string => {
+// Intelligent Offline Natural Language Responder
+const generateSmartOfflineReply = (query: string, mode: AgentMode = 'general'): string => {
   const q = query.toLowerCase();
 
-  if (q.includes('who') || q.includes('about') || q.includes('mudasir')) {
-    return `${personalDetails.name} is a Full Stack Developer & Software Engineer with a BS in Software Engineering from Sukkur IBA. He is certified 4x by Meta & Google (Front-End, Python Automation, Advanced Data Analytics, and AI).\n\nWould you like me to open his ATS Resume for you? [ACTION:OPEN_RESUME]`;
-  }
-  if (q.includes('project') || q.includes('work') || q.includes('app')) {
-    const pNames = projectsData.map((p) => p.title).join(', ');
-    return `Mudasir has engineered production systems including: **${pNames}**.\n\nHis applications feature MERN architecture, transactional payment pipelines, and AI integration. [ACTION:SCROLL_PROJECTS]`;
-  }
-  if (q.includes('skill') || q.includes('tech') || q.includes('stack')) {
-    return `Mudasir's core stack spans **React.js, Node.js, Express.js, MongoDB, MySQL, Python, TypeScript, Tailwind CSS, REST APIs, and React Native**. [ACTION:SCROLL_SKILLS]`;
-  }
   if (q.includes('cert') || q.includes('google') || q.includes('meta')) {
-    const certNames = certificationsData.map((c) => `• ${c.title} (${c.issuer})`).join('\n');
-    return `Mudasir holds 4 verified professional certifications:\n\n${certNames}\n\nAll verified on Coursera! [ACTION:SCROLL_CERTS]`;
-  }
-  if (q.includes('contact') || q.includes('hire') || q.includes('email') || q.includes('phone')) {
-    return `You can reach Mudasir directly via Email at **${personalDetails.email}** or Phone at **${personalDetails.phone}**. He is open for full-time roles & contract opportunities! [ACTION:SCROLL_CONTACT]`;
-  }
-  if (q.includes('resume')) {
-    return `Here is Mudasir's full ATS-optimized resume. Opening it now for you. [ACTION:OPEN_RESUME]`;
+    return `Mudasir holds **4 verified industry credentials** from **Meta** and **Google** (2026):
+
+1. **Meta Front-End Developer Professional Certificate** — React.js, UI/UX, Responsive Design, JavaScript.
+2. **Google IT Automation with Python Professional Certificate** — Python Scripting, Automation, Git, REST APIs.
+3. **Google Advanced Data Analytics Certificate** — Python Data Analysis, Statistics, Machine Learning, Tableau.
+4. **Google AI Professional Certificate** — Generative AI, Prompt Engineering, LLMs.
+
+All certifications are officially verified on Coursera. Would you like to explore his technical projects or ATS resume?`;
   }
 
-  return `System Query Acknowledged: "${query}". Mudasir is an expert Full Stack Engineer with proven production apps in React, Node.js, and Python. How can I assist with his technical background or projects?`;
+  if (q.includes('who') || q.includes('about') || q.includes('mudasir') || q.includes('background')) {
+    return `**Mudasir Ahmed Abro** is a **Full Stack Developer & Software Engineer** based in Karachi, Pakistan.
+
+* **Academic Degree:** Bachelor of Science in Software Engineering from Sukkur IBA University (Graduating 2026).
+* **Core Specialties:** Modern React.js frontends, React Native mobile apps, scalable Node.js/Express REST APIs, MongoDB & MySQL databases, and Generative AI prompt pipelines.
+* **Track Record:** 4+ delivered production systems with 100% on-time completion and a verified +30% page speed optimization.
+
+How can I assist you with his project architectures or hiring availability?`;
+  }
+
+  if (q.includes('project') || q.includes('work') || q.includes('app') || q.includes('resume builder') || q.includes('ecommerce')) {
+    return `Mudasir has built **4 major production applications**:
+
+1. **AI-Powered Resume Builder:** React + Node.js + OpenAI API + MongoDB. Reduced resume writing time by 80% with ATS-optimized schema automation.
+2. **Transactional E-Commerce Engine:** MERN Stack + JWT + Session locks. 100% CRUD reliability with zero race conditions during order placement.
+3. **Food Delivery Mobile App:** React Native + Node.js + MongoDB. Real-time order status tracking with a 3-role permission workflow (Customer, Restaurant, Admin).
+4. **School Management Platform:** React + Node.js + MySQL. Normalized relational database handling 200+ active student records and automated GPA triggers.`;
+  }
+
+  if (q.includes('evaluat') || q.includes('hire') || q.includes('fit') || q.includes('why should') || mode === 'recruiter') {
+    return `### 🎯 Candidate Fit Assessment for Mudasir Ahmed Abro:
+
+* **Frontend Mastery:** 95% proficiency in React.js, Tailwind CSS, TypeScript, and responsive state architecture (certified by Meta).
+* **Backend & API Design:** 92% in Node.js & Express.js REST APIs with robust JWT token authentication, RBAC middleware, and SQL/NoSQL databases.
+* **Production Reliability:** 100% on-time delivery rate on freelance client contracts, with +30% average speed boosts on delivered apps.
+* **Strong CS Foundation:** Formal Software Engineering curriculum from Sukkur IBA (SDLC, Data Structures, OOP, QA).
+
+Mudasir is available immediately for full-time software engineering roles and remote contracts.`;
+  }
+
+  if (q.includes('contact') || q.includes('email') || q.includes('phone') || mode === 'hire') {
+    return `You can reach Mudasir directly via:
+
+* 📧 **Email:** [${personalDetails.email}](mailto:${personalDetails.email})
+* 📞 **Phone:** [${personalDetails.phone}](tel:${personalDetails.phone})
+* 💼 **LinkedIn:** [${personalDetails.linkedin}](${personalDetails.linkedin})
+* 🐙 **GitHub:** [${personalDetails.github}](${personalDetails.github})
+
+He is currently active and open for full-time engineering opportunities and contract projects.`;
+  }
+
+  if (q.includes('open resume') || q.includes('show resume')) {
+    return `Opening Mudasir's complete ATS-Optimized Resume specification for you right now. [ACTION:OPEN_RESUME]`;
+  }
+
+  return `I am **JARVIS 2050**, Mudasir's Autonomous AI Representative. I can assist you with his Full Stack engineering capabilities, 4x Meta & Google credentials, MERN & Python system architectures, or schedule an interview. What would you like to explore?`;
 };
 
 // Main Agent Response Generator
 export const generateAgentResponse = async (
   conversationHistory: ChatMessage[],
-  currentPrompt: string
+  currentPrompt: string,
+  mode: AgentMode = 'general'
 ): Promise<{ text: string; action: string | null }> => {
   const apiKey = getApiKey();
 
   if (apiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey });
-      const systemInstruction = buildSystemInstruction();
+      const systemInstruction = buildSystemInstruction(mode);
 
-    // Map conversation history into Gemini format (last 8 messages for context)
-    const recentHistory = conversationHistory.slice(-8);
-    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+      // Map recent conversation history
+      const recentHistory = conversationHistory.slice(-8);
+      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
 
-    for (const msg of recentHistory) {
-      contents.push({
-        role: msg.sender === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }],
-      });
-    }
-
-    // Add current user prompt
-    contents.push({
-      role: 'user',
-      parts: [{ text: currentPrompt }],
-    });
-
-    const modelsToTry = ['gemini-3.7-flash', 'gemini-3.6-flash'];
-
-    for (const model of modelsToTry) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents,
-          config: {
-            systemInstruction,
-            temperature: 0.7,
-          },
+      for (const msg of recentHistory) {
+        contents.push({
+          role: msg.sender === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.text }],
         });
-
-        if (response.text) {
-          const { cleanText, action } = parseAgentAction(response.text);
-          return { text: cleanText, action };
-        }
-      } catch {
-        // Try next fallback model
-        continue;
       }
-    }
+
+      // Add current user prompt
+      contents.push({
+        role: 'user',
+        parts: [{ text: currentPrompt }],
+      });
+
+      const modelsToTry = ['gemini-3.7-flash', 'gemini-3.6-flash'];
+
+      for (const model of modelsToTry) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents,
+            config: {
+              systemInstruction,
+              temperature: 0.65,
+            },
+          });
+
+          if (response.text) {
+            const { cleanText, action } = parseAgentAction(response.text);
+            return { text: cleanText, action };
+          }
+        } catch {
+          // Try fallback model
+          continue;
+        }
+      }
     } catch {
-      // Top-level catch: proceed to smart offline fallback
+      // Proceed to smart offline fallback
     }
   }
 
-  // Fallback if all API attempts fail
-  const offlineRaw = generateSmartOfflineReply(currentPrompt);
+  // Fallback if no key or network failure
+  const offlineRaw = generateSmartOfflineReply(currentPrompt, mode);
   const { cleanText, action } = parseAgentAction(offlineRaw);
   return { text: cleanText, action };
 };

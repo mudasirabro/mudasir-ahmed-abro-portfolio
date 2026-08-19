@@ -31,8 +31,16 @@ export const MatrixBackground: React.FC<MatrixBackgroundProps> = ({ isTimeInvert
       height = canvas.height = window.innerHeight;
     };
 
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        lastTime = performance.now();
+        animationFrameId = requestAnimationFrame(draw);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     // Matrix Rain Stream Column Characters (Inception / Tenet Digital World)
     const chars = '01010101011001010101010101MUDASIRABROQUANTUM2050FULLSTACKDEVNODEJSREACTEXPRESSMONGODB';

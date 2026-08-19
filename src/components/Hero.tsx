@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Terminal, FileText, ArrowRight, Github, Linkedin, Mail, MapPin, Phone, ShieldCheck, CheckCircle2, Sparkles, Code2, Scan, Eye, Activity, Cpu, Zap, Radio, Lock } from 'lucide-react';
+import { Terminal, FileText, ArrowRight, Github, Linkedin, Mail, MapPin, Phone, ShieldCheck, CheckCircle2, Sparkles, Code2, Scan, Eye, Activity, Cpu, Zap, Radio, Lock, Bot } from 'lucide-react';
 import { personalDetails } from '../data/resumeData';
 import { soundEngine } from '../utils/audio';
 
 interface HeroProps {
   onOpenTerminal: () => void;
   onOpenResumeModal: () => void;
+  onOpenJarvis?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onOpenTerminal, onOpenResumeModal }) => {
+export const Hero: React.FC<HeroProps> = ({ onOpenTerminal, onOpenResumeModal, onOpenJarvis }) => {
   const [typedTitle, setTypedTitle] = useState('');
   const titles = [
     '2050 Full Stack Software Architect',
@@ -143,6 +144,20 @@ export const Hero: React.FC<HeroProps> = ({ onOpenTerminal, onOpenResumeModal })
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-4 pt-2">
+              {onOpenJarvis && (
+                <button
+                  onClick={() => {
+                    soundEngine.playClick();
+                    onOpenJarvis();
+                  }}
+                  className="px-5 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 text-white font-bold text-sm flex items-center space-x-2 shadow-[0_0_25px_rgba(168,85,247,0.4)] hover:shadow-[0_0_35px_rgba(168,85,247,0.7)] hover:scale-105 transition-all group"
+                >
+                  <Bot className="w-4 h-4 text-cyan-300 animate-pulse" />
+                  <span>⚡ Chat with JARVIS AI Agent</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                </button>
+              )}
+
               <a
                 href="#projects"
                 onClick={() => soundEngine.playClick()}

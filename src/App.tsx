@@ -18,6 +18,7 @@ import { soundEngine } from './utils/audio';
 export default function App() {
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [resumeModalOpen, setResumeModalOpen] = useState(false);
+  const [jarvisOpen, setJarvisOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
   const [isTimeInverted, setIsTimeInverted] = useState(false);
 
@@ -59,6 +60,7 @@ export default function App() {
       <Navbar
         onOpenTerminal={() => setTerminalOpen(true)}
         onOpenResumeModal={() => setResumeModalOpen(true)}
+        onOpenJarvis={() => setJarvisOpen(true)}
         activeSection={activeSection}
         isTimeInverted={isTimeInverted}
         onToggleTimeInversion={() => setIsTimeInverted(!isTimeInverted)}
@@ -69,6 +71,7 @@ export default function App() {
         <Hero
           onOpenTerminal={() => setTerminalOpen(true)}
           onOpenResumeModal={() => setResumeModalOpen(true)}
+          onOpenJarvis={() => setJarvisOpen(true)}
         />
         
         <TechStack />
@@ -86,7 +89,13 @@ export default function App() {
       <Footer />
 
       {/* Floating JARVIS 2050 AI Assistant Widget */}
-      <JarvisBot />
+      <JarvisBot
+        isOpen={jarvisOpen}
+        onClose={() => setJarvisOpen(false)}
+        onOpen={() => setJarvisOpen(true)}
+        onOpenResumeModal={() => setResumeModalOpen(true)}
+        onOpenTerminal={() => setTerminalOpen(true)}
+      />
 
       {/* Floating CLI Terminal Fab Button (Bottom Right) */}
       <button
@@ -109,6 +118,10 @@ export default function App() {
       <InteractiveTerminal
         isOpen={terminalOpen}
         onClose={() => setTerminalOpen(false)}
+        onOpenJarvis={() => {
+          setTerminalOpen(false);
+          setJarvisOpen(true);
+        }}
       />
 
       <AtsResumeModal

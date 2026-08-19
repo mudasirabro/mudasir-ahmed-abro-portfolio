@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Terminal, Volume2, VolumeX, FileText, Cpu, Code2, Layers, Briefcase, Award, Mail, RotateCcw, Clock } from 'lucide-react';
+import { Terminal, Volume2, VolumeX, FileText, Cpu, Code2, Layers, Briefcase, Award, Mail, RotateCcw, Clock, Bot } from 'lucide-react';
 import { soundEngine } from '../utils/audio';
 
 interface NavbarProps {
   onOpenTerminal: () => void;
   onOpenResumeModal: () => void;
+  onOpenJarvis?: () => void;
   activeSection: string;
   isTimeInverted: boolean;
   onToggleTimeInversion: () => void;
@@ -14,6 +15,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenTerminal,
   onOpenResumeModal,
+  onOpenJarvis,
   activeSection,
   isTimeInverted,
   onToggleTimeInversion,
@@ -148,6 +150,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               {isMuted ? <VolumeX className="w-4 h-4 text-slate-500" /> : <Volume2 className="w-4 h-4 text-cyan-400 animate-pulse" />}
             </button>
+
+            {/* JARVIS AI Agent Quick Trigger */}
+            {onOpenJarvis && (
+              <button
+                id="jarvis-navbar-trigger"
+                onClick={() => {
+                  soundEngine.playClick();
+                  onOpenJarvis();
+                }}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-950/90 via-slate-900 to-cyan-950/90 border border-purple-500/50 hover:border-cyan-400 text-cyan-300 text-xs font-mono shadow-[0_0_15px_rgba(168,85,247,0.35)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all group"
+                title="Chat with JARVIS AI Agent (Ctrl+J)"
+              >
+                <Bot className="w-3.5 h-3.5 text-purple-400 group-hover:rotate-12 transition-transform animate-pulse" />
+                <span className="font-bold hidden sm:inline">JARVIS AI</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              </button>
+            )}
 
             {/* Terminal Quick Trigger */}
             <button

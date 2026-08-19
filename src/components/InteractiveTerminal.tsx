@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play, CornerDownLeft, Sparkles, RefreshCw } from 'lucide-react';
+import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play, CornerDownLeft, Sparkles, RefreshCw, Bot } from 'lucide-react';
 import { personalDetails, skillsData, projectsData, experienceData, certificationsData, educationData } from '../data/resumeData';
+import { generateAgentResponse } from '../utils/aiAgent';
 import { soundEngine } from '../utils/audio';
 
 interface TerminalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenJarvis?: () => void;
 }
 
 interface CommandHistory {
@@ -51,6 +53,7 @@ export const InteractiveTerminal: React.FC<TerminalProps> = ({ isOpen, onClose }
 
   const quickCommands = [
     'help',
+    'ai <ask anything>',
     'summary',
     'skills',
     'projects',
@@ -61,7 +64,7 @@ export const InteractiveTerminal: React.FC<TerminalProps> = ({ isOpen, onClose }
     'clear',
   ];
 
-  const handleCommand = (cmdToRun?: string) => {
+  const handleCommand = async (cmdToRun?: string) => {
     const rawCmd = (cmdToRun !== undefined ? cmdToRun : input).trim();
     if (!rawCmd) return;
 
@@ -71,17 +74,88 @@ export const InteractiveTerminal: React.FC<TerminalProps> = ({ isOpen, onClose }
 
     let outputNode: React.ReactNode = null;
 
+    if (cmd.startsWith('ai ') || cmd.startsWith('jarvis ') || cmd === 'ai' || cmd === 'jarvis') {
+      const prompt = rawCmd.replace(/^(ai|jarvis)\s*/i, '').trim();
+
+      if (!prompt) {
+        outputNode = (
+          <div className="p-3 bg-purple-950/40 border border-purple-500/40 rounded-lg space-y-2 text-xs sm:text-sm font-mono text-purple-200">
+            <div className="flex items-center space-x-2 text-purple-300 font-bold">
+              <Bot className="w-4 h-4 text-cyan-400 animate-pulse" />
+              <span>JARVIS 2050 AI AGENT (GEMINI 3.7 FLASH)</span>
+            </div>
+            <p>Usage: <span className="text-cyan-300 font-bold">ai &lt;question about Mudasir&gt;</span></p>
+            <p className="text-slate-300">Examples:</p>
+            <ul className="list-disc list-inside text-slate-400 space-y-0.5">
+              <li>ai Explain his MERN &amp; Python project architectures</li>
+              <li>ai Evaluate Mudasir for a Full Stack engineer opening</li>
+              <li>ai What are his 4x Meta and Google certifications?</li>
+            </ul>
+            {onOpenJarvis && (
+              <button
+                onClick={onOpenJarvis}
+                className="mt-1 px-3 py-1 bg-cyan-950 border border-cyan-500/50 text-cyan-300 rounded text-xs hover:bg-cyan-900 flex items-center gap-1.5"
+              >
+                <Bot className="w-3.5 h-3.5" />
+                <span>Launch Holographic AI Assistant Chat</span>
+              </button>
+            )}
+          </div>
+        );
+        setHistory((prev) => [...prev, { command: rawCmd, output: outputNode, time }]);
+        setInput('');
+        return;
+      }
+
+      // Show temporary analyzing node
+      const loadingNode = (
+        <div className="flex items-center space-x-2 text-xs font-mono text-purple-300 py-1">
+          <Sparkles className="w-4 h-4 animate-spin text-cyan-400" />
+          <span>JARVIS AI is reasoning with Gemini 3.7 Flash...</span>
+        </div>
+      );
+
+      setHistory((prev) => [...prev, { command: rawCmd, output: loadingNode, time }]);
+      setInput('');
+
+      try {
+        const { text: aiResponse } = await generateAgentResponse([], prompt);
+        const finalNode = (
+          <div className="p-3 bg-purple-950/30 border border-purple-500/30 rounded-lg space-y-2 text-xs sm:text-sm font-mono text-slate-200">
+            <div className="flex items-center justify-between text-[10px] text-cyan-400 font-bold border-b border-purple-500/20 pb-1">
+              <span className="flex items-center gap-1">
+                <Bot className="w-3.5 h-3.5 text-purple-400" />
+                JARVIS AI RESPONSE
+              </span>
+              <span className="text-emerald-400">GEMINI 3.7 FLASH</span>
+            </div>
+            <p className="whitespace-pre-wrap leading-relaxed text-slate-200">{aiResponse}</p>
+          </div>
+        );
+
+        setHistory((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { command: rawCmd, output: finalNode, time };
+          return updated;
+        });
+      } catch {
+        // Fallback error
+      }
+      return;
+    }
+
     switch (cmd) {
       case 'help':
         outputNode = (
           <div className="space-y-2 text-xs sm:text-sm font-mono text-slate-300">
             <p className="text-cyan-400 font-bold">Available System Commands:</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2">
+              <div><span className="text-purple-400 font-bold">ai &lt;query&gt;</span> - Query JARVIS 2050 Gemini AI Agent</div>
               <div><span className="text-emerald-400 font-bold">summary</span> - Full candidate profile overview</div>
               <div><span className="text-emerald-400 font-bold">skills</span> - Categorized technical skill matrix</div>
-              <div><span className="text-emerald-400 font-bold">projects</span> - Production projects & architecture</div>
-              <div><span className="text-emerald-400 font-bold">experience</span> - Work history & impact metrics</div>
-              <div><span className="text-emerald-400 font-bold">certifications</span> - Professional certified credentials (Meta & Google)</div>
+              <div><span className="text-emerald-400 font-bold">projects</span> - Production projects &amp; architecture</div>
+              <div><span className="text-emerald-400 font-bold">experience</span> - Work history &amp; impact metrics</div>
+              <div><span className="text-emerald-400 font-bold">certifications</span> - Professional certified credentials (Meta &amp; Google)</div>
               <div><span className="text-emerald-400 font-bold">education</span> - University degree details</div>
               <div><span className="text-emerald-400 font-bold">contact</span> - Phone, Email, LinkedIn, GitHub</div>
               <div><span className="text-emerald-400 font-bold">sudo hire</span> - Initiate recruiter contact protocol</div>

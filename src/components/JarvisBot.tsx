@@ -53,15 +53,31 @@ export const JarvisBot: React.FC<JarvisBotProps> = ({
 
   const handleOpen = () => {
     soundEngine.playClick();
+    setInternalIsOpen(true);
     if (externalOnOpen) externalOnOpen();
-    else setInternalIsOpen(true);
   };
 
   const handleClose = () => {
     soundEngine.playClick();
+    setInternalIsOpen(false);
     if (externalOnClose) externalOnClose();
-    else setInternalIsOpen(false);
   };
+
+  // Keyboard shortcut listener: Escape to close, Ctrl+J to toggle
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isWidgetOpen) {
+        handleClose();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        if (isWidgetOpen) handleClose();
+        else handleOpen();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isWidgetOpen]);
 
   const [input, setInput] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -277,91 +293,110 @@ How can I help you today?`,
       {/* Floating Chat Modal */}
       <AnimatePresence>
         {isWidgetOpen && (
-          <div className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 z-50 flex items-center justify-center p-3 sm:p-0">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-0 sm:block sm:pointer-events-none">
+            {/* Click-outside backdrop overlay */}
             <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 30, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className={`w-full bg-[#080d1a]/95 border border-purple-500/40 sm:rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.25)] backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300 ${
-                isExpanded
-                  ? 'h-[92vh] sm:w-[700px]'
-                  : 'h-[85vh] sm:h-[600px] sm:w-[480px]'
-              }`}
-            >
-              {/* Header Bar */}
-              <div className="px-4 py-3 bg-gradient-to-r from-purple-950/90 via-slate-900 to-cyan-950/90 border-b border-purple-500/30 flex items-center justify-between select-none">
-                <div className="flex items-center space-x-2.5">
-                  <div className="relative p-1.5 rounded-lg bg-purple-900/40 border border-purple-500/50">
-                    <Bot className="w-4 h-4 text-cyan-300 animate-pulse" />
-                    <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-1.5">
-                      <span className="text-sm font-bold font-mono text-cyan-200">JARVIS 2050</span>
-                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-900/60 border border-purple-400/40 text-purple-200 font-mono">
-                        AI AGENT
-                      </span>
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleClose}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 sm:pointer-events-auto cursor-pointer"
+            />
+
+            {/* Chat Box Window */}
+            <div className="relative z-50 sm:fixed sm:bottom-6 sm:left-6 sm:pointer-events-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 30, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                onClick={(e) => e.stopPropagation()}
+                className={`w-full max-w-[95vw] bg-[#080d1a]/95 border border-purple-500/50 sm:rounded-2xl shadow-[0_0_60px_rgba(168,85,247,0.35)] backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300 ${
+                  isExpanded
+                    ? 'h-[92vh] sm:w-[700px]'
+                    : 'h-[85vh] sm:h-[600px] sm:w-[480px]'
+                }`}
+              >
+                {/* Header Bar */}
+                <div className="px-4 py-3 bg-gradient-to-r from-purple-950/90 via-slate-900 to-cyan-950/90 border-b border-purple-500/30 flex items-center justify-between select-none">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="relative p-1.5 rounded-lg bg-purple-900/40 border border-purple-500/50">
+                      <Bot className="w-4 h-4 text-cyan-300 animate-pulse" />
+                      <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                     </div>
-                    <p className="text-[10px] text-slate-400 font-mono">Autonomous Digital Representative</p>
+                    <div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="text-sm font-bold font-mono text-cyan-200">JARVIS 2050</span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-900/60 border border-purple-400/40 text-purple-200 font-mono">
+                          AI AGENT
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 font-mono">Autonomous Digital Representative</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-1.5">
+                    {/* API Key Settings */}
+                    <button
+                      onClick={() => setShowKeyModal(!showKeyModal)}
+                      title="Configure Google AI Studio API Key"
+                      className="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors cursor-pointer"
+                    >
+                      <Key className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Clear chat */}
+                    <button
+                      onClick={handleClearChat}
+                      title="Clear Chat History"
+                      className="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors cursor-pointer"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Speech Toggle */}
+                    <button
+                      onClick={() => {
+                        soundEngine.playClick();
+                        setSpeechEnabled(!speechEnabled);
+                      }}
+                      title={speechEnabled ? 'Mute AI Voice' : 'Enable AI Voice'}
+                      className="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors cursor-pointer"
+                    >
+                      {speechEnabled ? (
+                        <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+                      ) : (
+                        <VolumeX className="w-3.5 h-3.5 text-slate-500" />
+                      )}
+                    </button>
+
+                    {/* Expand/Collapse */}
+                    <button
+                      onClick={() => {
+                        soundEngine.playClick();
+                        setIsExpanded(!isExpanded);
+                      }}
+                      title={isExpanded ? 'Minimize window' : 'Expand window'}
+                      className="hidden sm:block p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors cursor-pointer"
+                    >
+                      {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                    </button>
+
+                    {/* Prominent High-Contrast Close Button */}
+                    <button
+                      id="close-jarvis-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClose();
+                      }}
+                      title="Close JARVIS AI (Esc)"
+                      aria-label="Close JARVIS AI"
+                      className="p-1.5 rounded-lg bg-red-950/40 border border-red-500/40 text-red-300 hover:text-white hover:bg-red-600 hover:border-red-400 transition-all cursor-pointer shadow-[0_0_10px_rgba(239,68,68,0.2)] ml-1 flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center space-x-1">
-                  {/* API Key Settings */}
-                  <button
-                    onClick={() => setShowKeyModal(!showKeyModal)}
-                    title="Configure Google AI Studio API Key"
-                    className="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors"
-                  >
-                    <Key className="w-3.5 h-3.5" />
-                  </button>
-
-                  {/* Clear chat */}
-                  <button
-                    onClick={handleClearChat}
-                    title="Clear Chat History"
-                    className="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                  </button>
-
-                  {/* Speech Toggle */}
-                  <button
-                    onClick={() => {
-                      soundEngine.playClick();
-                      setSpeechEnabled(!speechEnabled);
-                    }}
-                    title={speechEnabled ? 'Mute AI Voice' : 'Enable AI Voice'}
-                    className="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors"
-                  >
-                    {speechEnabled ? (
-                      <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
-                    ) : (
-                      <VolumeX className="w-3.5 h-3.5 text-slate-500" />
-                    )}
-                  </button>
-
-                  {/* Expand/Collapse */}
-                  <button
-                    onClick={() => {
-                      soundEngine.playClick();
-                      setIsExpanded(!isExpanded);
-                    }}
-                    className="hidden sm:block p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors"
-                  >
-                    {isExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-                  </button>
-
-                  {/* Close */}
-                  <button
-                    onClick={handleClose}
-                    className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-slate-800/60 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
 
               {/* API Key Modal Drawer */}
               {showKeyModal && (
@@ -593,8 +628,9 @@ How can I help you today?`,
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
-    </>
-  );
+        </div>
+      )}
+    </AnimatePresence>
+  </>
+);
 };

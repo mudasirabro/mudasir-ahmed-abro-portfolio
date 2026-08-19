@@ -40,8 +40,28 @@ export default function App() {
       }
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setJarvisOpen(false);
+        setTerminalOpen(false);
+        setResumeModalOpen(false);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+        e.preventDefault();
+        setJarvisOpen((prev) => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setTerminalOpen((prev) => !prev);
+      }
+    };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   return (

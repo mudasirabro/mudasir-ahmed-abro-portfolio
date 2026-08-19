@@ -10,25 +10,28 @@ import {
   Volume2,
   VolumeX,
   RotateCcw,
-  Zap,
-  FileText,
+  Key,
   Layers,
   Award,
   Mail,
   ArrowRight,
   Briefcase,
-  Terminal,
   Cpu,
   UserCheck,
   Compass,
+  FileText,
+  Check,
 } from 'lucide-react';
 import {
   generateAgentResponse,
   ChatMessage,
   executeUiAction,
   AgentMode,
+  getApiKey,
+  setCustomApiKey,
 } from '../utils/aiAgent';
 import { soundEngine } from '../utils/audio';
+import { MessageRenderer } from './MessageRenderer';
 
 interface JarvisBotProps {
   isOpen?: boolean;
@@ -65,6 +68,9 @@ export const JarvisBot: React.FC<JarvisBotProps> = ({
   const [isThinking, setIsThinking] = useState(false);
   const [speechEnabled, setSpeechEnabled] = useState(false);
   const [currentMode, setCurrentMode] = useState<AgentMode>('general');
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState(getApiKey());
+  const [keySavedToast, setKeySavedToast] = useState(false);
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -72,7 +78,7 @@ export const JarvisBot: React.FC<JarvisBotProps> = ({
       sender: 'jarvis',
       text: `Hello! I am **JARVIS 2050**, the Autonomous AI Representative for **Mudasir Ahmed Abro**.
 
-I can evaluate Mudasir for job openings, explain the system architecture of his production applications, verify his **4x Meta & Google Certifications**, or assist you in hiring him.
+I can evaluate Mudasir for software engineering roles, explain the architecture of his production systems, verify his **4x Meta & Google Certifications**, or assist you in hiring him.
 
 How can I help you today?`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -98,7 +104,6 @@ How can I help you today?`,
     if (!speechEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     try {
       window.speechSynthesis.cancel();
-      // Strip markdown symbols for voice
       const cleanSpokenText = text
         .replace(/[*#_`\[\]()]/g, '')
         .replace(/https?:\/\/\S+/g, '')
@@ -109,6 +114,16 @@ How can I help you today?`,
       utterance.pitch = 0.95;
       window.speechSynthesis.speak(utterance);
     } catch {}
+  };
+
+  const handleSaveApiKey = () => {
+    soundEngine.playClick();
+    setCustomApiKey(apiKeyInput);
+    setKeySavedToast(true);
+    setTimeout(() => {
+      setKeySavedToast(false);
+      setShowKeyModal(false);
+    }, 1200);
   };
 
   const handleSendMessage = async (promptToSend?: string) => {
@@ -149,7 +164,7 @@ How can I help you today?`,
       setMessages((prev) => [...prev, jarvisMsg]);
       speakText(responseText);
 
-      // If user explicitly gave a direct command like "open resume", auto execute
+      // If user explicitly issued a navigation command, execute it
       const lowerQuery = query.toLowerCase();
       if (
         (lowerQuery.includes('open resume') || lowerQuery.includes('show resume')) &&
@@ -180,7 +195,7 @@ How can I help you today?`,
       {
         id: `welcome-${Date.now()}`,
         sender: 'jarvis',
-        text: `Memory buffer cleared. Operating in **${currentMode.toUpperCase()}** Mode. Ask me anything regarding Mudasir's technical background, projects, or credentials.`,
+        text: `Memory buffer refreshed. Operating in **${currentMode.toUpperCase()}** Mode. Ask me anything regarding Mudasir's technical background, projects, or credentials.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         mode: currentMode,
       },
@@ -213,17 +228,17 @@ How can I help you today?`,
   const getActionLabel = (action: string) => {
     switch (action) {
       case 'OPEN_RESUME':
-        return { label: 'Launch ATS Resume Specification', icon: FileText, color: 'text-emerald-400 border-emerald-500/40 bg-emerald-950/40' };
+        return { label: 'Launch ATS Resume Specification', icon: FileText, color: 'text-emerald-400 border-emerald-500/40 bg-emerald-950/50 hover:bg-emerald-900/50' };
       case 'SCROLL_PROJECTS':
-        return { label: 'Jump to 2050 Projects Showcase', icon: Layers, color: 'text-cyan-400 border-cyan-500/40 bg-cyan-950/40' };
+        return { label: 'Jump to 2050 Projects Showcase', icon: Layers, color: 'text-cyan-400 border-cyan-500/40 bg-cyan-950/50 hover:bg-cyan-900/50' };
       case 'SCROLL_CERTS':
-        return { label: 'View 4x Meta & Google Credentials', icon: Award, color: 'text-amber-400 border-amber-500/40 bg-amber-950/40' };
+        return { label: 'View 4x Meta & Google Credentials', icon: Award, color: 'text-amber-400 border-amber-500/40 bg-amber-950/50 hover:bg-amber-900/50' };
       case 'SCROLL_SKILLS':
-        return { label: 'Inspect Technical Skill Matrix', icon: Cpu, color: 'text-purple-400 border-purple-500/40 bg-purple-950/40' };
+        return { label: 'Inspect Technical Skill Matrix', icon: Cpu, color: 'text-purple-400 border-purple-500/40 bg-purple-950/50 hover:bg-purple-900/50' };
       case 'SCROLL_CONTACT':
-        return { label: 'Contact & Hire Mudasir', icon: Mail, color: 'text-indigo-400 border-indigo-500/40 bg-indigo-950/40' };
+        return { label: 'Contact & Hire Mudasir', icon: Mail, color: 'text-indigo-400 border-indigo-500/40 bg-indigo-950/50 hover:bg-indigo-900/50' };
       default:
-        return { label: 'Execute Action', icon: ArrowRight, color: 'text-cyan-400 border-cyan-500/40 bg-cyan-950/40' };
+        return { label: 'Execute Action', icon: ArrowRight, color: 'text-cyan-400 border-cyan-500/40 bg-cyan-950/50 hover:bg-cyan-900/50' };
     }
   };
 
@@ -270,12 +285,12 @@ How can I help you today?`,
               transition={{ duration: 0.2 }}
               className={`w-full bg-[#080d1a]/95 border border-purple-500/40 sm:rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.25)] backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-300 ${
                 isExpanded
-                  ? 'h-[92vh] sm:w-[680px]'
-                  : 'h-[85vh] sm:h-[580px] sm:w-[460px]'
+                  ? 'h-[92vh] sm:w-[700px]'
+                  : 'h-[85vh] sm:h-[600px] sm:w-[480px]'
               }`}
             >
               {/* Header Bar */}
-              <div className="px-4 py-3 bg-gradient-to-r from-purple-950/80 via-slate-900 to-cyan-950/80 border-b border-purple-500/30 flex items-center justify-between select-none">
+              <div className="px-4 py-3 bg-gradient-to-r from-purple-950/90 via-slate-900 to-cyan-950/90 border-b border-purple-500/30 flex items-center justify-between select-none">
                 <div className="flex items-center space-x-2.5">
                   <div className="relative p-1.5 rounded-lg bg-purple-900/40 border border-purple-500/50">
                     <Bot className="w-4 h-4 text-cyan-300 animate-pulse" />
@@ -285,14 +300,23 @@ How can I help you today?`,
                     <div className="flex items-center space-x-1.5">
                       <span className="text-sm font-bold font-mono text-cyan-200">JARVIS 2050</span>
                       <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-900/60 border border-purple-400/40 text-purple-200 font-mono">
-                        GEMINI 3.7
+                        AI AGENT
                       </span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-mono">Autonomous AI Representative</p>
+                    <p className="text-[10px] text-slate-400 font-mono">Autonomous Digital Representative</p>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-1">
+                  {/* API Key Settings */}
+                  <button
+                    onClick={() => setShowKeyModal(!showKeyModal)}
+                    title="Configure Google AI Studio API Key"
+                    className="p-1.5 text-slate-400 hover:text-cyan-300 rounded-lg hover:bg-slate-800/60 transition-colors"
+                  >
+                    <Key className="w-3.5 h-3.5" />
+                  </button>
+
                   {/* Clear chat */}
                   <button
                     onClick={handleClearChat}
@@ -338,6 +362,39 @@ How can I help you today?`,
                   </button>
                 </div>
               </div>
+
+              {/* API Key Modal Drawer */}
+              {showKeyModal && (
+                <div className="p-3 bg-slate-900 border-b border-purple-500/40 text-xs font-mono space-y-2">
+                  <div className="flex items-center justify-between text-cyan-300 font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5" />
+                      Google AI Studio API Key (Optional)
+                    </span>
+                    <button onClick={() => setShowKeyModal(false)} className="text-slate-400 hover:text-white">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400">
+                    Paste your Gemini API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-cyan-400 underline">aistudio.google.com</a> to enable direct cloud reasoning.
+                  </p>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="password"
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="flex-1 px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-white text-xs focus:border-cyan-400 focus:outline-none"
+                    />
+                    <button
+                      onClick={handleSaveApiKey}
+                      className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded-lg text-xs flex items-center gap-1"
+                    >
+                      {keySavedToast ? <Check className="w-3.5 h-3.5" /> : 'Save'}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Mode Switcher Tabs */}
               <div className="px-3 py-1.5 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between gap-1 overflow-x-auto text-[11px] font-mono select-none">
@@ -416,7 +473,7 @@ How can I help you today?`,
                       className={`flex flex-col ${isJarvis ? 'items-start' : 'items-end'}`}
                     >
                       <div
-                        className={`max-w-[90%] sm:max-w-[85%] rounded-2xl p-3 sm:p-3.5 shadow-md space-y-2 leading-relaxed ${
+                        className={`max-w-[92%] sm:max-w-[88%] rounded-2xl p-3 sm:p-3.5 shadow-md space-y-2 leading-relaxed ${
                           isJarvis
                             ? 'bg-slate-900/90 border border-purple-500/30 text-slate-100'
                             : 'bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-medium'
@@ -437,10 +494,12 @@ How can I help you today?`,
                           <span>{msg.timestamp}</span>
                         </div>
 
-                        {/* Text Body */}
-                        <div className="whitespace-pre-wrap space-y-1.5 text-slate-200">
-                          {msg.text}
-                        </div>
+                        {/* Rich Markdown Message Renderer */}
+                        {isJarvis ? (
+                          <MessageRenderer content={msg.text} />
+                        ) : (
+                          <p className="whitespace-pre-wrap text-slate-100">{msg.text}</p>
+                        )}
 
                         {/* Interactive In-Chat Action Card */}
                         {isJarvis && actionDetails && msg.action && (
@@ -477,7 +536,7 @@ How can I help you today?`,
                   >
                     <div className="p-3 rounded-2xl bg-slate-900/90 border border-purple-500/30 text-cyan-300 font-mono text-xs flex items-center space-x-2">
                       <Sparkles className="w-4 h-4 text-cyan-400 animate-spin" />
-                      <span>JARVIS is reasoning with Gemini 3.7 Flash...</span>
+                      <span>JARVIS is reasoning...</span>
                     </div>
                   </motion.div>
                 )}

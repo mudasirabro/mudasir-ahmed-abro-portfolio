@@ -4,6 +4,7 @@ import { Terminal as TerminalIcon, X, Maximize2, Minimize2, Play, CornerDownLeft
 import { personalDetails, skillsData, projectsData, experienceData, certificationsData, educationData } from '../data/resumeData';
 import { generateAgentResponse } from '../utils/aiAgent';
 import { soundEngine } from '../utils/audio';
+import { MessageRenderer } from './MessageRenderer';
 
 interface TerminalProps {
   isOpen: boolean;
@@ -129,7 +130,9 @@ export const InteractiveTerminal: React.FC<TerminalProps> = ({ isOpen, onClose }
               </span>
               <span className="text-emerald-400">GEMINI 3.7 FLASH</span>
             </div>
-            <p className="whitespace-pre-wrap leading-relaxed text-slate-200">{aiResponse}</p>
+            <div className="pt-1 text-slate-200">
+              <MessageRenderer content={aiResponse} />
+            </div>
           </div>
         );
 

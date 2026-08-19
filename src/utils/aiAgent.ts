@@ -19,25 +19,39 @@ export interface ChatMessage {
   mode?: AgentMode;
 }
 
-// Get API Key securely from Vite or environment
-const getApiKey = (): string => {
+// Get API Key from localStorage, Vite, or process environment
+export const getApiKey = (): string => {
   try {
-    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
-      return import.meta.env.VITE_GEMINI_API_KEY;
-    }
-    if (typeof import.meta !== 'undefined' && import.meta.env?.GEMINI_API_KEY) {
-      return import.meta.env.GEMINI_API_KEY;
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('JARVIS_GEMINI_API_KEY');
+      if (stored && stored.trim().length > 10) return stored.trim();
     }
   } catch {}
   try {
-    if (typeof process !== 'undefined' && process.env?.VITE_GEMINI_API_KEY) {
-      return process.env.VITE_GEMINI_API_KEY;
+    if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GEMINI_API_KEY) {
+      const key = import.meta.env.VITE_GEMINI_API_KEY;
+      if (key && !key.startsWith('AQ.')) return key;
     }
+  } catch {}
+  try {
     if (typeof process !== 'undefined' && process.env?.GEMINI_API_KEY) {
-      return process.env.GEMINI_API_KEY;
+      const key = process.env.GEMINI_API_KEY;
+      if (key && !key.startsWith('AQ.')) return key;
     }
   } catch {}
   return '';
+};
+
+export const setCustomApiKey = (key: string) => {
+  try {
+    if (typeof window !== 'undefined') {
+      if (key.trim()) {
+        localStorage.setItem('JARVIS_GEMINI_API_KEY', key.trim());
+      } else {
+        localStorage.removeItem('JARVIS_GEMINI_API_KEY');
+      }
+    }
+  } catch {}
 };
 
 // Build comprehensive system prompt with rich context tailored to current Agent Mode
@@ -54,17 +68,14 @@ const buildSystemInstruction = (mode: AgentMode = 'general'): string => {
    - Description: ${p.description}
    - Tech Stack: ${p.technologies.join(', ')}
    - Key Metrics: ${p.metrics.join(' | ')}
-   - Architecture Highlights: ${p.architectureDetails.highlights.join('; ')}
-   - Frontend: ${p.architectureDetails.frontend || 'N/A'}
-   - Backend: ${p.architectureDetails.backend || 'N/A'}
-   - Database: ${p.architectureDetails.database || 'N/A'}`
+   - Architecture Highlights: ${p.architectureDetails.highlights.join('; ')}`
     )
     .join('\n\n');
 
   const certsList = certificationsData
     .map(
       (c) =>
-        `- **${c.title}** (${c.year}) by ${c.issuer}\n  * Verified Skills: ${c.skills.join(', ')}\n  * Coursera Verification: ${c.verifyUrl || 'Verified'}`
+        `- **${c.title}** (${c.year}) by ${c.issuer} | Skills: ${c.skills.join(', ')} | Verification: ${c.verifyUrl || 'Verified'}`
     )
     .join('\n');
 
@@ -83,10 +94,10 @@ const buildSystemInstruction = (mode: AgentMode = 'general'): string => {
       modeSpecificPrompt = `\nCURRENT MODE: RECRUITER & TALENT SCREENING MODE\nFocus on evaluating job fit, soft skills, team collaboration, technical competence in React/Node/Python, and highlighting business value, latency improvements (+30%), and 100% on-time delivery.`;
       break;
     case 'architect':
-      modeSpecificPrompt = `\nCURRENT MODE: SYSTEM ARCHITECT & TECHNICAL DEEP-DIVE MODE\nFocus on full-stack architecture, API security, JWT authentication with HTTP-Only cookies, database schemas (MongoDB & MySQL), transactional locks, and prompt engineering pipelines. Include code patterns or architectural ASCII diagrams when helpful.`;
+      modeSpecificPrompt = `\nCURRENT MODE: SYSTEM ARCHITECT & TECHNICAL DEEP-DIVE MODE\nFocus on full-stack architecture, API security, JWT authentication with HTTP-Only cookies, database schemas (MongoDB & MySQL), transactional locks, and prompt engineering pipelines.`;
       break;
     case 'hire':
-      modeSpecificPrompt = `\nCURRENT MODE: HIRE & INTERVIEW SCHEDULING MODE\nFocus on Mudasir's availability (immediate for full-time and high-impact remote contract roles), direct contact channels (email: ${personalDetails.email}, phone: ${personalDetails.phone}), and facilitating interview scheduling.`;
+      modeSpecificPrompt = `\nCURRENT MODE: HIRE & INTERVIEW SCHEDULING MODE\nFocus on Mudasir's immediate availability for full-time and remote roles, direct contact channels (email: ${personalDetails.email}, phone: ${personalDetails.phone}), and interview scheduling.`;
       break;
     default:
       modeSpecificPrompt = `\nCURRENT MODE: GENERAL HIGH-TECH AGENT MODE\nDeliver articulate, tech-savvy, and comprehensive responses across Mudasir's full portfolio, background, credentials, and projects.`;
@@ -149,15 +160,14 @@ You can trigger website actions ONLY when the visitor explicitly asks to perform
 - Explicit request to navigate/scroll to contact section: include "[ACTION:SCROLL_CONTACT]"
 
 CRITICAL RULE FOR ACTIONS:
-- If the visitor simply asks a question (e.g. "What certifications do you have?" or "How does the AI Resume builder work?"), DO NOT trigger an action! Instead, answer the question thoroughly, articulately, and directly in the chat!
+- If the visitor simply asks a question (e.g. "What certifications do you have?" or "How does the AI Resume builder work?"), DO NOT trigger an action tag! Instead, answer the question directly, articulately, and in full detail in the chat!
 
 ==================================================
 BEHAVIORAL GUIDELINES:
 ==================================================
-1. ANSWER DIRECTLY: Always answer the user's specific question first in detail. Never dump generic boilerplate or recite raw resumes.
-2. TONE: Eloquent, tech-forward, professional, and confident (like an advanced AI assistant).
-3. TRUTHFULNESS: Base all factual answers strictly on Mudasir's verified information.
-4. FORMATTING: Use clean markdown with headings, bullet points, and code snippets where appropriate.`;
+1. ANSWER DIRECTLY: Always answer the user's specific question directly with high eloquence.
+2. TONE: Sharp, knowledgeable, professional, and tech-forward.
+3. ACCURACY: Strict adherence to verified credentials.`;
 };
 
 // Parse any embedded action token from AI response
@@ -216,67 +226,222 @@ export const executeUiAction = (
   }
 };
 
-// Intelligent Offline Natural Language Responder
-const generateSmartOfflineReply = (query: string, mode: AgentMode = 'general'): string => {
-  const q = query.toLowerCase();
+// Deep Multi-Intent Natural Language Intelligence Engine
+export const generateSmartOfflineReply = (query: string, mode: AgentMode = 'general'): string => {
+  const q = query.toLowerCase().trim();
 
-  if (q.includes('cert') || q.includes('google') || q.includes('meta')) {
-    return `Mudasir holds **4 verified industry credentials** from **Meta** and **Google** (2026):
+  // 1. Specific Certifications / Credentials Query
+  if (
+    q.includes('cert') ||
+    q.includes('google and meta') ||
+    q.includes('meta & google') ||
+    q.includes('credential') ||
+    q.includes('meta cert') ||
+    q.includes('google cert')
+  ) {
+    return `Mudasir holds **4 verified Professional Certifications** issued by **Meta** and **Google** (via Coursera):
 
-1. **Meta Front-End Developer Professional Certificate** — React.js, UI/UX, Responsive Design, JavaScript.
-2. **Google IT Automation with Python Professional Certificate** — Python Scripting, Automation, Git, REST APIs.
-3. **Google Advanced Data Analytics Certificate** — Python Data Analysis, Statistics, Machine Learning, Tableau.
-4. **Google AI Professional Certificate** — Generative AI, Prompt Engineering, LLMs.
+1. **Meta Front-End Developer Professional Certificate (2026)**
+   * **Core Competencies:** React.js, Advanced JavaScript (ES6+), HTML5/CSS3, Responsive UI/UX, Component Architecture.
+   * [Verify on Coursera](https://coursera.org/verify/professional-cert/SWDZZUJZAZ06)
 
-All certifications are officially verified on Coursera. Would you like to explore his technical projects or ATS resume?`;
+2. **Google IT Automation with Python Professional Certificate (2026)**
+   * **Core Competencies:** Python Scripting, Workflow Automation, REST APIs, Git/GitHub Version Control, System Troubleshooting.
+   * [Verify on Coursera](https://coursera.org/verify/professional-cert/5V7PGR43TZGI)
+
+3. **Google Advanced Data Analytics Certificate (2026)**
+   * **Core Competencies:** Exploratory Data Analysis, Statistical Modeling, Machine Learning foundations, Python, Tableau.
+   * [Verify on Coursera](https://coursera.org/verify/professional-cert/C6WGLX3FN30J)
+
+4. **Google AI Professional Certificate (2026)**
+   * **Core Competencies:** Generative AI Architecture, Prompt Engineering, Large Language Models (LLMs), AI Application Integration.
+   * [Verify on Coursera](https://coursera.org/verify/professional-cert/EEMOLF5E7TNV)
+
+These credentials validate his proficiency across front-end engineering, backend automation, data analytics, and generative AI.`;
   }
 
-  if (q.includes('who') || q.includes('about') || q.includes('mudasir') || q.includes('background')) {
-    return `**Mudasir Ahmed Abro** is a **Full Stack Developer & Software Engineer** based in Karachi, Pakistan.
-
-* **Academic Degree:** Bachelor of Science in Software Engineering from Sukkur IBA University (Graduating 2026).
-* **Core Specialties:** Modern React.js frontends, React Native mobile apps, scalable Node.js/Express REST APIs, MongoDB & MySQL databases, and Generative AI prompt pipelines.
-* **Track Record:** 4+ delivered production systems with 100% on-time completion and a verified +30% page speed optimization.
-
-How can I assist you with his project architectures or hiring availability?`;
-  }
-
-  if (q.includes('project') || q.includes('work') || q.includes('app') || q.includes('resume builder') || q.includes('ecommerce')) {
-    return `Mudasir has built **4 major production applications**:
-
-1. **AI-Powered Resume Builder:** React + Node.js + OpenAI API + MongoDB. Reduced resume writing time by 80% with ATS-optimized schema automation.
-2. **Transactional E-Commerce Engine:** MERN Stack + JWT + Session locks. 100% CRUD reliability with zero race conditions during order placement.
-3. **Food Delivery Mobile App:** React Native + Node.js + MongoDB. Real-time order status tracking with a 3-role permission workflow (Customer, Restaurant, Admin).
-4. **School Management Platform:** React + Node.js + MySQL. Normalized relational database handling 200+ active student records and automated GPA triggers.`;
-  }
-
-  if (q.includes('evaluat') || q.includes('hire') || q.includes('fit') || q.includes('why should') || mode === 'recruiter') {
+  // 2. Candidate Evaluation for Full Stack / Recruiter Fit
+  if (
+    q.includes('evaluate') ||
+    q.includes('full stack react') ||
+    q.includes('react & node') ||
+    q.includes('react and node') ||
+    q.includes('fit') ||
+    q.includes('why should') ||
+    q.includes('hire him') ||
+    mode === 'recruiter'
+  ) {
     return `### 🎯 Candidate Fit Assessment for Mudasir Ahmed Abro:
 
-* **Frontend Mastery:** 95% proficiency in React.js, Tailwind CSS, TypeScript, and responsive state architecture (certified by Meta).
-* **Backend & API Design:** 92% in Node.js & Express.js REST APIs with robust JWT token authentication, RBAC middleware, and SQL/NoSQL databases.
-* **Production Reliability:** 100% on-time delivery rate on freelance client contracts, with +30% average speed boosts on delivered apps.
-* **Strong CS Foundation:** Formal Software Engineering curriculum from Sukkur IBA (SDLC, Data Structures, OOP, QA).
+* **Frontend Engineering (95% Mastery):** Certified by Meta. Expert in React.js, Tailwind CSS, TypeScript, component modularity, state management, and real-time UI synchronization.
+* **Backend & REST APIs (92% Mastery):** Proficient in Node.js & Express.js with secure JWT authentication (HTTP-Only cookies), Role-Based Access Control (RBAC), and transactional database queries across MongoDB and MySQL.
+* **Quantifiable Impact:** Proven record of achieving a **+30% Page Load Speed Boost** and maintaining a **100% On-Time Delivery Rate** across freelance contracts.
+* **CS & Systems Rigor:** Completing a formal **BS in Software Engineering** at Sukkur IBA University (Graduating 2026), mastering Data Structures, Algorithms, SDLC, and Software QA.
 
-Mudasir is available immediately for full-time software engineering roles and remote contracts.`;
+Mudasir brings end-to-end product development velocity with high engineering standards from Day 1.`;
   }
 
-  if (q.includes('contact') || q.includes('email') || q.includes('phone') || mode === 'hire') {
-    return `You can reach Mudasir directly via:
+  // 3. Key Delivery Metrics & Performance Boosts
+  if (
+    q.includes('metric') ||
+    q.includes('performance boost') ||
+    q.includes('delivery rate') ||
+    q.includes('speed') ||
+    q.includes('boost')
+  ) {
+    return `### ⚡ Mudasir's Verified Engineering Metrics:
 
-* 📧 **Email:** [${personalDetails.email}](mailto:${personalDetails.email})
-* 📞 **Phone:** [${personalDetails.phone}](tel:${personalDetails.phone})
-* 💼 **LinkedIn:** [${personalDetails.linkedin}](${personalDetails.linkedin})
-* 🐙 **GitHub:** [${personalDetails.github}](${personalDetails.github})
-
-He is currently active and open for full-time engineering opportunities and contract projects.`;
+1. **+30% Page Load Speed Boost:** Optimized front-end bundling, implemented code-splitting in Vite/React, and streamlined database queries across full-stack applications.
+2. **100% On-Time Delivery Rate:** Completed and deployed 4+ full-stack and mobile production applications on schedule with zero critical post-deployment blockers.
+3. **80% Resume Writing Time Reduction:** Designed and launched an AI-Powered Resume Builder utilizing dynamic prompt pipelines and schema-strict OpenAI integration.
+4. **100% Transactional Integrity:** Engineered a full-scale multi-vendor e-commerce platform with concurrency locks preventing race conditions in cart and inventory operations.`;
   }
 
-  if (q.includes('open resume') || q.includes('show resume')) {
-    return `Opening Mudasir's complete ATS-Optimized Resume specification for you right now. [ACTION:OPEN_RESUME]`;
+  // 4. Hiring Availability & Contact
+  if (
+    q.includes('availab') ||
+    q.includes('when can start') ||
+    q.includes('open for') ||
+    q.includes('hire mudasir') ||
+    mode === 'hire'
+  ) {
+    return `### 💼 Mudasir's Availability & Direct Contact:
+
+* **Current Status:** Available immediately for full-time Software Engineer positions and remote engineering contracts.
+* **Preferred Roles:** Full Stack Developer, Frontend Engineer (React), Node.js Backend Engineer, or AI Application Engineer.
+* **Direct Channels:**
+  * 📧 **Email:** [${personalDetails.email}](mailto:${personalDetails.email})
+  * 📞 **Phone:** [${personalDetails.phone}](tel:${personalDetails.phone})
+  * 💼 **LinkedIn:** [${personalDetails.linkedin}](${personalDetails.linkedin})
+  * 🐙 **GitHub:** [${personalDetails.github}](${personalDetails.github})
+  * 📍 **Location:** ${personalDetails.location} (Open to Remote & Relocation)`;
   }
 
-  return `I am **JARVIS 2050**, Mudasir's Autonomous AI Representative. I can assist you with his Full Stack engineering capabilities, 4x Meta & Google credentials, MERN & Python system architectures, or schedule an interview. What would you like to explore?`;
+  // 5. System Architecture: AI Resume Builder
+  if (
+    q.includes('ai resume') ||
+    q.includes('resume builder') ||
+    (q.includes('architecture') && q.includes('resume'))
+  ) {
+    return `### 🏗️ AI-Powered Resume Builder Architecture:
+
+* **Frontend:** React.js dynamic multi-step wizard with live ATS preview canvas and real-time keyword density calculations.
+* **Backend Proxy:** Node.js & Express.js secure API gateway isolating OpenAI API credentials and enforcing rate-limiting middleware.
+* **Prompt Pipeline:** Custom prompt engineering that enforces structured JSON schema outputs from LLMs for automated section parsing.
+* **Database:** MongoDB storing user profile schemas, saved resume configurations, and template states.
+* **Export Engine:** Client-side ATS-compliant PDF generation optimized for recruitment parsing software (Lever, Greenhouse).`;
+  }
+
+  // 6. System Architecture: E-Commerce Web Platform
+  if (
+    q.includes('ecommerce') ||
+    q.includes('e-commerce') ||
+    q.includes('shop') ||
+    (q.includes('architecture') && q.includes('commerce'))
+  ) {
+    return `### 🏗️ E-Commerce Web Platform Architecture:
+
+* **Stack:** Full MERN (MongoDB, Express.js, React.js, Node.js).
+* **Security & Auth:** JSON Web Tokens (JWT) stored in HTTP-Only cookies with role-based access control (Admin, Vendor, Customer).
+* **Concurrency Handling:** Transactional database session locks that prevent race conditions and inventory overselling during simultaneous checkouts.
+* **State Management:** Centralized cart and checkout pipeline with real-time order lifecycle tracking.`;
+  }
+
+  // 7. System Architecture: Food Delivery Mobile App
+  if (
+    q.includes('food') ||
+    q.includes('mobile app') ||
+    q.includes('react native') ||
+    q.includes('delivery app')
+  ) {
+    return `### 📱 Food Delivery Mobile App Architecture:
+
+* **Framework:** React Native delivering cross-platform iOS and Android builds from a single codebase.
+* **Backend:** Node.js & Express.js REST API with MongoDB data persistence.
+* **Role Architecture:** 3-role workflow partition (Customer ordering, Restaurant dashboard, Courier delivery dispatch).
+* **Key Feature:** Dynamic menu search, order dispatch lifecycle, and real-time status management.`;
+  }
+
+  // 8. System Architecture: School Management System
+  if (
+    q.includes('school') ||
+    q.includes('student') ||
+    q.includes('management system') ||
+    q.includes('mysql')
+  ) {
+    return `### 🏫 School Management System Architecture:
+
+* **Stack:** React.js frontend connected to a Node.js REST API backed by **MySQL**.
+* **Relational Design:** 3NF normalized schema with foreign key constraints across Students, Teachers, Courses, and Attendance tables.
+* **Scale:** Manages 200+ active student records with automated GPA calculations and role-restricted teacher/admin dashboards.`;
+  }
+
+  // 9. Education & Academic Degree
+  if (
+    q.includes('sukkur') ||
+    q.includes('degree') ||
+    q.includes('iba') ||
+    q.includes('university') ||
+    q.includes('education') ||
+    q.includes('study')
+  ) {
+    return `### 🎓 Academic Degree & Foundation:
+
+* **Degree:** Bachelor of Science in Software Engineering (BS-SE)
+* **Institution:** **Sukkur IBA University** (Sukkur Institute of Business Administration)
+* **Graduation:** Expected May 2026 | Location: Sukkur, Pakistan
+* **Core Disciplines:** Software Architecture & System Design, Data Structures & Algorithms, Object-Oriented Programming (OOP), Database Management Systems (DBMS), Software Testing & Quality Assurance, Agile/Scrum Methodologies.`;
+  }
+
+  // 10. Technical Skills & Matrix
+  if (
+    q.includes('skill') ||
+    q.includes('stack') ||
+    q.includes('technolog') ||
+    q.includes('languages') ||
+    q.includes('tools')
+  ) {
+    return `### 💻 Mudasir's Categorized Technical Skill Matrix:
+
+* **Frontend:** React.js (95%), Tailwind CSS (95%), JavaScript ES6+ (95%), React Native (85%), HTML5/CSS3 (95%), TypeScript (80%).
+* **Backend:** Node.js (92%), Express.js (92%), RESTful APIs (95%), JWT Authentication (90%), Python (85%).
+* **Databases:** MongoDB / Mongoose (90%), MySQL / SQL (85%).
+* **AI & Automation:** Prompt Engineering & LLM APIs (88%), Generative AI Pipelines (85%), Automation Scripting (85%).
+* **Tools & DevOps:** Git/GitHub (95%), Postman (90%), Vite (90%), VS Code (95%).`;
+  }
+
+  // 11. Work Experience & EvoDynamics
+  if (
+    q.includes('experience') ||
+    q.includes('evodynamics') ||
+    q.includes('work history') ||
+    q.includes('company') ||
+    q.includes('intern')
+  ) {
+    return `### 💼 Work Experience & Track Record:
+
+* **Software Engineer Intern @ EvoDynamics Vision** (2024 – Present | Karachi, Pakistan)
+  * Developed modular, reusable React UI components reducing development cycles across sprints.
+  * Designed RESTful API endpoints with Express.js and optimized MongoDB aggregations for high query performance.
+  * Conducted API unit testing with Postman and participated in Agile sprint reviews and code reviews.
+* **Full Stack Freelance Engineer** (2023 – Present)
+  * Built and deployed 4+ production web and mobile platforms with 100% on-time delivery and +30% average speed boosts.`;
+  }
+
+  // 12. Open Resume Action
+  if (q.includes('open resume') || q.includes('show resume') || q.includes('view resume')) {
+    return `Opening Mudasir Ahmed Abro's complete ATS-Optimized Resume specification right now. [ACTION:OPEN_RESUME]`;
+  }
+
+  // Default Overview
+  return `### 🤖 JARVIS 2050 — Mudasir Ahmed Abro
+
+* **Title:** Full Stack Software Engineer & Quantum AI Architect
+* **Education:** BS Software Engineering @ Sukkur IBA University (2026)
+* **Credentials:** 4x Meta & Google Certified (React, Python, Data Analytics, Generative AI)
+* **Production Projects:** AI Resume Builder, Multi-Vendor E-Commerce, Food Delivery App, School Management Platform.
+
+How can I assist you with his candidate evaluation, technical deep dives, or interview scheduling?`;
 };
 
 // Main Agent Response Generator
@@ -287,12 +452,12 @@ export const generateAgentResponse = async (
 ): Promise<{ text: string; action: string | null }> => {
   const apiKey = getApiKey();
 
-  if (apiKey) {
+  // If a valid Google AI Studio key is configured (AIzaSy...)
+  if (apiKey && apiKey.startsWith('AIzaSy')) {
     try {
       const ai = new GoogleGenAI({ apiKey });
       const systemInstruction = buildSystemInstruction(mode);
 
-      // Map recent conversation history
       const recentHistory = conversationHistory.slice(-8);
       const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
 
@@ -303,7 +468,6 @@ export const generateAgentResponse = async (
         });
       }
 
-      // Add current user prompt
       contents.push({
         role: 'user',
         parts: [{ text: currentPrompt }],
@@ -327,16 +491,15 @@ export const generateAgentResponse = async (
             return { text: cleanText, action };
           }
         } catch {
-          // Try fallback model
           continue;
         }
       }
     } catch {
-      // Proceed to smart offline fallback
+      // Proceed to smart offline NLP engine
     }
   }
 
-  // Fallback if no key or network failure
+  // Fallback to our deep Multi-Intent Natural Language Intelligence Engine
   const offlineRaw = generateSmartOfflineReply(currentPrompt, mode);
   const { cleanText, action } = parseAgentAction(offlineRaw);
   return { text: cleanText, action };
